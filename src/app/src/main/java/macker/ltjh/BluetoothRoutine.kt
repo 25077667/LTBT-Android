@@ -1,18 +1,26 @@
 package macker.ltjh
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.widget.ArrayAdapter
+import android.widget.ListView
 import android.widget.TextView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import kotlin.math.log
 
 
 class BluetoothRoutine : AppCompatActivity() {
@@ -23,7 +31,22 @@ class BluetoothRoutine : AppCompatActivity() {
         setupBluetoothAdapter()
         checkBluetoothPermission()
         checkBluetoothState()
+        turnOffTextView()
 
+        val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
+        registerReceiver(receiver, filter)
+
+        findBoundedBluetoothDevices()?.forEach { device ->
+            findBluetoothDevices?.add(device)
+        }
+        Log.i("Bluetooth device", "Start rendering")
+
+        renderBluetoothDevices()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(receiver)
     }
 
     private fun setupBluetoothAdapter() {
@@ -59,7 +82,83 @@ class BluetoothRoutine : AppCompatActivity() {
         }
     }
 
+    // Turn off the textview to invisible
+    private fun turnOffTextView() {
+        val textView = findViewById<TextView>(R.id.textView)
+        textView.text = ""
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun renderBluetoothDevices() {
+    //  Rendering findBluetoothDevices to the listview
+        val listView = findViewById<ListView>(R.id.listView)
+        val listViewItems = mutableListOf<String>()
+        findBluetoothDevices?.forEach { device ->
+//          TODO: Get the RSSI
+            val bluetoothItem = BluetoothItem(device.name, device.address, 0)
+            listViewItems.add(bluetoothItem.toListViewItem())
+        }
+        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, listViewItems)
+        listView.adapter = adapter
+    }
+
+    @SuppressLint("MissingPermission")
+    fun findBoundedBluetoothDevices(): Set<BluetoothDevice>? {
+        // Get a list of bonded devices
+        val pairedDevices = bluetoothAdapter?.bondedDevices
+
+        // If there are paired devices
+        if (pairedDevices?.isNotEmpty() == true) {
+            // Loop through paired devices
+            pairedDevices.forEach { device ->
+                Log.i("Bluetooth device", device.name + " " + device.address)
+            }
+        } else {
+            Log.e("Bluetooth device", "No paired devices")
+        }
+
+        return pairedDevices
+    }
+
 //    Member data
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothManager: BluetoothManager? = null
+    private val findBluetoothDevices: MutableSet<BluetoothDevice>? = null
+    private val receiver = object : BroadcastReceiver() {
+        @SuppressLint("MissingPermission")
+        override fun onReceive(context: Context, intent: Intent) {
+            when(intent.action) {
+                BluetoothDevice.ACTION_FOUND -> {
+                    // Discovery has found a device. Get the BluetoothDevice
+                    // object and its info from the Intent.
+                    val device: BluetoothDevice? =
+                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                    findBluetoothDevices?.add(device!!)
+                }
+            }
+        }
+    }
+}
+
+
+// A bluetooth Item illustrates a bluetooth device
+class BluetoothItem {
+    // Constructor takes 2 parameters (name, address, rssi)
+    constructor(name: String, address: String, rssi: Int) {
+        this.name = name
+        this.address = address
+        this.rssi = rssi
+    }
+    override fun toString(): String {
+        return "$name $address $rssi"
+    }
+
+    fun toListViewItem(): String {
+        return toString()
+    }
+
+    // Member data
+    var name: String
+    var address: String
+    var rssi: Int
 }
