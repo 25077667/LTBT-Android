@@ -2,6 +2,28 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+<!-- Refers to: https://developer.android.com/guide/topics/connectivity/bluetooth/permissions -->
+
+    <!-- Request legacy Bluetooth permissions on older devices -->
+    <uses-permission android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <!-- Make the device discoverable to Bluetooth devices -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <!-- Look for Bluetooth devices -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <!-- Communicates with already-paired Bluetooth devices -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Request location permissions on newer devices -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Support a service and can run on Android 10 (API level 29) or Android 11 -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!-- Specify Bluetooth feature is required -->
+    <uses-feature android:name="android.hardware.bluetooth" android:required="true"/>
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -9,17 +31,18 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MakerLTJH"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="macker.ltjh.BluetoothRoutine" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".BluetoothRoutine" />
     </application>
 
 </manifest>
