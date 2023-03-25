@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.ArrayAdapter
@@ -20,7 +21,6 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import kotlin.math.log
 
 
 class BluetoothRoutine : AppCompatActivity() {
@@ -46,6 +46,7 @@ class BluetoothRoutine : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        Log.i("Bluetooth device", "Destroying")
         unregisterReceiver(receiver)
     }
 
@@ -57,7 +58,9 @@ class BluetoothRoutine : AppCompatActivity() {
             // Device doesn't support Bluetooth
             // Pop up a message "Device doesn't support Bluetooth"
             val textView = findViewById<TextView>(R.id.textView)
-            textView.text = "Device doesn't support Bluetooth"
+            textView.text = buildString {
+                append("Device doesn't support Bluetooth")
+            }
             textView.setTextColor(Color.RED)
         }
     }
@@ -71,7 +74,7 @@ class BluetoothRoutine : AppCompatActivity() {
 
     private fun checkBluetoothState() {
         if (bluetoothAdapter?.isEnabled == false) {
-            val activityResultLauncher = registerForActivityResult<Intent, ActivityResult>(
+            val activityResultLauncher = registerForActivityResult(
                 StartActivityForResult()
             ) { result: ActivityResult ->
                 if (result.resultCode == RESULT_OK) {
@@ -99,6 +102,7 @@ class BluetoothRoutine : AppCompatActivity() {
             listViewItems.add(bluetoothItem.toListViewItem())
         }
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, listViewItems)
+
         listView.adapter = adapter
     }
 
@@ -131,8 +135,13 @@ class BluetoothRoutine : AppCompatActivity() {
                 BluetoothDevice.ACTION_FOUND -> {
                     // Discovery has found a device. Get the BluetoothDevice
                     // object and its info from the Intent.
-                    val device: BluetoothDevice? =
+
+                    val device: BluetoothDevice? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+                    } else {
+                        @Suppress("DEPRECATION")
                         intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                    }
                     findBluetoothDevices?.add(device!!)
                 }
             }
@@ -142,13 +151,7 @@ class BluetoothRoutine : AppCompatActivity() {
 
 
 // A bluetooth Item illustrates a bluetooth device
-class BluetoothItem {
-    // Constructor takes 2 parameters (name, address, rssi)
-    constructor(name: String, address: String, rssi: Int) {
-        this.name = name
-        this.address = address
-        this.rssi = rssi
-    }
+private class BluetoothItem (var name: String, var address: String, var rssi: Int) {
     override fun toString(): String {
         return "$name $address $rssi"
     }
@@ -157,8 +160,4 @@ class BluetoothItem {
         return toString()
     }
 
-    // Member data
-    var name: String
-    var address: String
-    var rssi: Int
 }
