@@ -3,6 +3,7 @@ package macker.ltjh
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.content.Intent
+import macker.ltjh.bluetooth.BluetoothRoutine
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

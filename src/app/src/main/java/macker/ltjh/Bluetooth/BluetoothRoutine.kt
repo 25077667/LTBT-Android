@@ -1,17 +1,14 @@
-package macker.ltjh
+package macker.ltjh.bluetooth
 
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.ArrayAdapter
@@ -21,7 +18,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-
+import macker.ltjh.R
 
 class BluetoothRoutine : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,14 +29,7 @@ class BluetoothRoutine : AppCompatActivity() {
         checkBluetoothPermission()
         checkBluetoothState()
         turnOffTextView()
-
-        val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
-        registerReceiver(receiver, filter)
-
-        findBoundedBluetoothDevices()?.forEach { device ->
-            findBluetoothDevices?.add(device)
-        }
-        Log.i("Bluetooth device", "Start rendering")
+        registerReceiver(receiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
 
         renderBluetoothDevices()
     }
@@ -128,36 +118,5 @@ class BluetoothRoutine : AppCompatActivity() {
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothManager: BluetoothManager? = null
     private val findBluetoothDevices: MutableSet<BluetoothDevice>? = null
-    private val receiver = object : BroadcastReceiver() {
-        @SuppressLint("MissingPermission")
-        override fun onReceive(context: Context, intent: Intent) {
-            when(intent.action) {
-                BluetoothDevice.ACTION_FOUND -> {
-                    // Discovery has found a device. Get the BluetoothDevice
-                    // object and its info from the Intent.
-
-                    val device: BluetoothDevice? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
-                    }
-                    findBluetoothDevices?.add(device!!)
-                }
-            }
-        }
-    }
-}
-
-
-// A bluetooth Item illustrates a bluetooth device
-private class BluetoothItem (var name: String, var address: String, var rssi: Int) {
-    override fun toString(): String {
-        return "$name $address $rssi"
-    }
-
-    fun toListViewItem(): String {
-        return toString()
-    }
-
+    private val receiver = DeviceListBroadcast()
 }
