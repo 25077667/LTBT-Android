@@ -42,18 +42,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".bluetooth.BluetoothActivity" />
+        <activity android:name=".bluetooth.ScanningActivity" />
+        <activity android:name=".controlPanel.ControlPanelActivity" />
 
-        <activity android:name=".bluetooth.BluetoothRoutine" />
-
-        <!-- If this receiver listens for broadcasts sent from the system or from
-     other apps, even other apps that you own, set android:exported to "true". -->
-        <receiver android:name=".bluetooth.DeviceListBroadcast" android:exported="false">
-            <intent-filter>
-                <action android:name="BluttoothBroadcastReceiver.kt" />
-            </intent-filter>
-        </receiver>
-
-        <service android:name=".bluetooth.BlueToothService" />
+        <service android:name=".bluetooth.BluetoothService" />
 
     </application>
 
