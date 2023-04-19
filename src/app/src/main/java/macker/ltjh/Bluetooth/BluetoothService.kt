@@ -12,9 +12,9 @@ import android.os.IBinder
 import android.util.Log
 import macker.ltjh.controlPanel.ControlPanelActivity
 
-class BluetoothService: Service() {
-    inner class LocalBinder : Binder() {
-        fun getService(): BluetoothService = this@BluetoothService
+object BluetoothService: Service() {
+    class LocalBinder(private val service: BluetoothService) : Binder() {
+        fun getService(): BluetoothService = service
     }
 
     override fun onBind(intent: Intent?): IBinder {
@@ -46,7 +46,6 @@ class BluetoothService: Service() {
 //        https://developer.android.com/guide/components/services#CreatingBoundService
         Log.i("Bluetooth service", "Service destroyed")
         super.onDestroy()
-        bluetoothSocket?.close()
     }
 
     private fun setupBluetoothAdapter() {
@@ -71,24 +70,91 @@ class BluetoothService: Service() {
         Log.i("Bluetooth service", "Connecting device")
 
 //        Connect as a client
-        Thread(Runnable {
+        Thread {
             try {
                 // Cancel discovery because it otherwise slows down the connection.
                 stopScanning()
 
-                bluetoothSocket = device.createRfcommSocketToServiceRecord(device.uuids[0].uuid)
-                bluetoothSocket?.connect()
+//                Create a socket to connect with the given BluetoothDevice
+                enableBluetoothTransferor(device)
                 //  Go to next page and start to send data
                 startActivity(Intent(this, ControlPanelActivity::class.java))
             } catch (e: Exception) {
                 Log.e("Bluetooth service", "Error connecting to device")
             }
-        }).start()
+        }.start()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun enableBluetoothTransferor(device : BluetoothDevice) {
+        val bluetoothSocket = device.createRfcommSocketToServiceRecord(device.uuids[0].uuid)
+        Log.i("Bluetooth service", "Bluetooth socket created")
+        bluetoothSocket.connect()
+        Log.i("Bluetooth service", "Bluetooth socket connected")
+
+        val bluetoothTransferor = BluetoothTransferor
+        bluetoothTransferor.initBluetoothSocket(bluetoothSocket)
     }
 
     //    Member data
-    private val localBinder: IBinder = LocalBinder()
+    private val localBinder: IBinder = LocalBinder(this)
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothManager: BluetoothManager? = null
+}
+
+
+// A BluetoothSocket data transfer singleton service
+object BluetoothTransferor : Service() {
+    class LocalBinder(private val service: BluetoothTransferor) : Binder() {
+        fun getService(): BluetoothTransferor = service
+    }
+
+    override fun onBind(intent: Intent?): IBinder {
+        Log.i("Bluetooth transferor", "Service started")
+        return localBinder
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        Log.i("Bluetooth transferor", "Service created")
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.i("Bluetooth transferor", "Service started")
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    override fun onDestroy() {
+        Log.i("Bluetooth transferor", "Service destroyed")
+        super.onDestroy()
+    }
+
+//    Init the BluetoothSocket
+    fun initBluetoothSocket(bluetoothSocket: BluetoothSocket) {
+        this.bluetoothSocket = bluetoothSocket
+    }
+
+//    TODO: Implement the data transfer utilities in C++ runtime library for some performance boost
+//    We would not open this part of code to the public
+
+    fun write(data: ByteArray) {
+        bluetoothSocket?.outputStream?.write(data)
+    }
+
+    fun read(): ByteArray {
+        return bluetoothSocket?.inputStream?.readBytes()!!
+    }
+
+    fun getStatusDescription(): String {
+//        TODO: Implement the status description
+        return "Status description"
+    }
+
+    fun getBluetoothSocket(): BluetoothSocket? {
+        return bluetoothSocket
+    }
+
+    //    Member data
+    private val localBinder: IBinder = LocalBinder(this)
     private var bluetoothSocket: BluetoothSocket? = null
 }

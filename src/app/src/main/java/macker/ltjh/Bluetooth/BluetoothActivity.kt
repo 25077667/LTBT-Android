@@ -2,7 +2,6 @@ package macker.ltjh.bluetooth
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.ListActivity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -35,6 +34,7 @@ class BluetoothActivity : AppCompatActivity() {
         checkBluetoothPermission()
         setupBluetoothAdapter()
         checkBluetoothState()
+        startBluetoothService()
         turnOffTextView()
         registerListViewItemListener()
 
@@ -87,6 +87,12 @@ class BluetoothActivity : AppCompatActivity() {
         }
     }
 
+    private fun startBluetoothService() {
+        val bluetoothService = Intent(this, BluetoothService::class.java)
+        startService(bluetoothService)
+        Log.i("Bluetooth device", "Start Bluetooth service")
+    }
+
     // Turn off the textview to invisible
     private fun turnOffTextView() {
         val textView = findViewById<TextView>(R.id.textView)
@@ -96,7 +102,7 @@ class BluetoothActivity : AppCompatActivity() {
     private fun registerListViewItemListener() {
         val listView = findViewById<ListView>(R.id.listView)
         listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            service.connectDevice(deviceViewModel.getDevice(position).bluetoothDevice)
+            bluetoothService.connectDevice(deviceViewModel.getDevice(position).bluetoothDevice)
         }
     }
 
@@ -135,7 +141,7 @@ class BluetoothActivity : AppCompatActivity() {
         }
     }
     private val deviceViewModel: BlueToothDeviceList = BlueToothDeviceList(this, findViewById(R.id.listView))
-    private val service = BluetoothService()
+    private lateinit var bluetoothService: BluetoothService
 }
 
 
@@ -144,7 +150,8 @@ class BluetoothActivity : AppCompatActivity() {
 class ScanningActivity : AppCompatActivity() {
     private lateinit var fab: FloatingActionButton
     private val isScanning = AtomicBoolean(true)
-    private val bluetoothService = BluetoothService()
+    lateinit var bluetoothService: BluetoothService
+        private set
 
     private val scanningRunnable = object : Runnable {
         override fun run() {

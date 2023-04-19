@@ -47,6 +47,7 @@
         <activity android:name=".controlPanel.ControlPanelActivity" />
 
         <service android:name=".bluetooth.BluetoothService" />
+        <service android:name=".bluetooth.BluetoothTransferor" />
 
     </application>
 

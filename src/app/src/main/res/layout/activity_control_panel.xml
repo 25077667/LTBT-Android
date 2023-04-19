@@ -1,6 +1,271 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Title bar -->
+    <RelativeLayout
+        android:id="@+id/title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/darker_gray"
+        tools:ignore="MissingConstraints">
+
+        <!-- Device name -->
+        <TextView
+            android:id="@+id/device_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:text="Device Name"
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
+
+        <!-- Setting button -->
+        <Button
+            android:id="@+id/setting_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginEnd="326dp"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:text="Setting"
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
+        <!-- Exit button -->
+        <Button
+            android:id="@+id/exit_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="-412dp"
+            android:layout_toStartOf="@id/setting_button"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:text="Exit"
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
+    </RelativeLayout>
+
+
+    <!-- A relative layout in the body of the screen -->
+    <!-- The body layout is 85% of the entire screen and bellow of the title -->
+
+    <RelativeLayout
+        android:id="@+id/body"
+        android:layout_width="match_parent"
+        android:layout_height="325dp"
+        android:background="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@id/footer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title_bar"
+        tools:ignore="MissingConstraints">
+
+        <!-- Split relative layout to horizontal (left and right) layout -->
+
+        <RelativeLayout
+            android:id="@+id/left"
+            android:layout_width="421dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="@id/right"
+            app:layout_constraintEnd_toEndOf="@id/right"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- A vertical pulling bar, and the middle value is 0, the bound with +-1 -->
+            <SeekBar
+                android:id="@+id/L_seekbar"
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="16dp"
+                android:max="1"
+                android:progress="0"
+                android:progressDrawable="@android:drawable/button_onoff_indicator_off"
+                android:rotation="270"
+                android:thumb="@drawable/baseline_circle_24"
+                android:thumbOffset="0dp"
+                android:thumbTintMode="add"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/L_button_up"
+                android:layout_width="110dp"
+                android:layout_height="100dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="110dp"
+                android:layout_marginTop="39dp"
+                android:layout_marginEnd="125dp"
+                android:layout_toStartOf="@+id/L_seekbar"
+                tools:src="@drawable/baseline_arrow_upward_24"
+                android:contentDescription="L_up"/>
+
+            <ImageButton
+                android:id="@+id/L_button_down"
+                android:layout_width="110dp"
+                android:layout_height="100dp"
+                android:layout_below="@+id/L_button_up"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="110dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="125dp"
+                android:layout_marginBottom="39dp"
+                android:layout_toStartOf="@+id/L_seekbar"
+                tools:src="@drawable/baseline_arrow_downward_24"
+                android:contentDescription="L_down"/>
+
+            <TextView
+                android:id="@+id/L_num"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="137dp"
+                android:layout_marginEnd="17dp"
+                android:layout_marginBottom="137dp"
+                android:layout_toStartOf="@+id/L_seekbar"
+                android:text="num" />
+
+            <!-- Left layout -->
+
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/right"
+            android:layout_width="421dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="@id/left"
+            app:layout_constraintEnd_toEndOf="@id/left"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- Right layout -->
+
+            <SeekBar
+                android:id="@+id/R_seekbar"
+                style="@style/Widget.AppCompat.SeekBar"
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:max="1"
+                android:progress="0"
+                android:progressDrawable="@android:drawable/button_onoff_indicator_off"
+                android:rotation="270"
+                android:thumb="@drawable/baseline_circle_24"
+                android:thumbOffset="0dp"
+                android:thumbTintMode="add"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/R_button_up"
+                android:layout_width="110dp"
+                android:layout_height="100dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="125dp"
+                android:layout_marginTop="39dp"
+                android:layout_marginEnd="110dp"
+                android:layout_toEndOf="@+id/R_seekbar"
+                tools:src="@drawable/baseline_arrow_upward_24"
+                android:contentDescription="R_up"/>
+
+            <ImageButton
+                android:id="@+id/R_button_down"
+                android:layout_width="110dp"
+                android:layout_height="100dp"
+                android:layout_below="@+id/R_button_up"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="125dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="110dp"
+                android:layout_marginBottom="39dp"
+                android:layout_toEndOf="@+id/R_seekbar"
+                tools:src="@drawable/baseline_arrow_downward_24"
+                android:contentDescription="R_down"/>
+
+            <TextView
+                android:id="@+id/R_num"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="17dp"
+                android:layout_marginTop="137dp"
+                android:layout_marginBottom="137dp"
+                android:layout_toEndOf="@+id/R_seekbar"
+                android:text="num" />
+
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/footer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/darker_gray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- A reserved banner is same size with the title bar -->
+        <!-- Teh reserved banner is at the bottom of the body -->
+        <TextView
+            android:id="@+id/reserved_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:background="@android:color/darker_gray"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+    </RelativeLayout>
+
+
+
+
+    <!-- A relative layout in the footer of the screen -->
+    <!-- The footer layout height is same as the title bar and at the bottom of body -->
+
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
