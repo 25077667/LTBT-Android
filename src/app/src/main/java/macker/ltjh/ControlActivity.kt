@@ -3,17 +3,18 @@ package macker.ltjh
 import Joystick
 import android.os.Bundle
 import android.view.MotionEvent
+import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 
 class ControlActivity : AppCompatActivity() {
     private lateinit var bluetoothManager: BluetoothManager
-    private lateinit var layout: ConstraintLayout // Main layout container
+    private lateinit var layout: RelativeLayout // Main layout container
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_control)
-        layout = findViewById(R.id.main_layout) // Replace with your main layout ID
+        layout = findViewById(R.id.main_layout)
 
         // Initialize BluetoothManager
         bluetoothManager = BluetoothManager(this)
