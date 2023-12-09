@@ -3,7 +3,6 @@ package macker.ltjh
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 class ControlActivity : AppCompatActivity() {
@@ -25,12 +24,12 @@ class ControlActivity : AppCompatActivity() {
 
         layout.setOnTouchListener { view, event ->
             view.performClick() // Perform click to ensure that the view receives click events
-            handleTouchEvent(event, view)
+            handleTouchEvent(event)
             true // Always return true to indicate that the listener has consumed the event.
         }
     }
 
-    private fun handleTouchEvent(event: MotionEvent, view: View) {
+    private fun handleTouchEvent(event: MotionEvent) {
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                 if (activePointers.size < MAX_NUM_JOYSTICKS) { // Only create new joystick if max not reached
