@@ -1,15 +1,19 @@
 package macker.ltjh
-import android.view.View
 
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
-import android.view.Window
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 class ControlActivity : AppCompatActivity() {
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var layout: ControlActivityLayout
+    companion object {
+        const val MAX_NUM_JOYSTICKS = 2 // Define max number of joysticks
+    }
+    // Set to keep track of active pointers creating joysticks
+    private val activePointers = mutableSetOf<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,34 +24,62 @@ class ControlActivity : AppCompatActivity() {
         bluetoothManager = BluetoothManager(this)
 
         layout.setOnTouchListener { view, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    // Construct a new joystick at the touched position
-                    val joystick = createJoystick(event.x, event.y)
-                    layout.addView(joystick)
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    // Update joystick position on move
-                    val joystick = layout.getChildAt(layout.childCount - 1) as? Joystick
-                    joystick?.let {
-                        joystick.updatePosition(event.x, event.y)
+            view.performClick() // Perform click to ensure that the view receives click events
+            handleTouchEvent(event, view)
+            true // Always return true to indicate that the listener has consumed the event.
+        }
+    }
+
+    private fun handleTouchEvent(event: MotionEvent, view: View) {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                if (activePointers.size < MAX_NUM_JOYSTICKS) { // Only create new joystick if max not reached
+                    val pointerIndex = event.actionIndex
+                    val pointerId = event.getPointerId(pointerIndex)
+
+                    // Check if pointerId is already associated with a joystick
+                    if (!activePointers.contains(pointerId)) {
+                        activePointers.add(pointerId)
+                        val x = event.getX(pointerIndex)
+                        val y = event.getY(pointerIndex)
+                        val joystick = createJoystick(x, y).apply { tag = pointerId }
+                        layout.addView(joystick)
                     }
-                    true
                 }
-                MotionEvent.ACTION_UP -> {
-                    // Remove joystick on touch release
-                    val joystick = layout.getChildAt(layout.childCount - 1) as? Joystick
-                    joystick?.let {
-                        joystick.resetPosition()
+            }
+            MotionEvent.ACTION_MOVE -> {
+                // Move joysticks
+                for (i in 0 until event.pointerCount) {
+                    val pointerId = event.getPointerId(i)
+                    if (activePointers.contains(pointerId)) {
+                        findJoystickByPointerId(pointerId)?.updatePosition(event.getX(i), event.getY(i))
                     }
-                    layout.removeViewAt(layout.childCount - 1)
-                    view.performClick()
-                    true
                 }
-                else -> false
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+                // Remove joystick
+                val pointerIndex = event.actionIndex
+                val pointerId = event.getPointerId(pointerIndex)
+                if (activePointers.contains(pointerId)) {
+                    val joystick = findJoystickByPointerId(pointerId)
+                    joystick?.let {
+                        it.resetPosition()
+                        layout.removeView(it)
+                    }
+                    activePointers.remove(pointerId)
+                }
             }
         }
+    }
+
+    private fun findJoystickByPointerId(pointerId: Int): Joystick? {
+        for (i in 0 until layout.childCount) {
+            val view = layout.getChildAt(i)
+            if (view is Joystick && view.tag == pointerId) {
+                return view
+            }
+        }
+        return null
     }
 
     private fun createJoystick(x: Float, y: Float): Joystick {
