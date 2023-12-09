@@ -88,7 +88,15 @@ class BluetoothDeviceListActivity : Activity() {
                     val device: BluetoothDevice =
                         intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)!!
                     devicesList.add(device)
-                    devicesNameList.add(device.name ?: "Unknown Device")
+
+                    // Get the name and the address of the Bluetooth device
+                    val deviceName = device.name ?: "Unknown Device"
+                    val deviceAddress = device.address // Get MAC address
+
+                    // Combine both the name and the address to display
+                    val deviceInfo = "$deviceName ($deviceAddress)"
+                    devicesNameList.add(deviceInfo)
+
                     adapter.notifyDataSetChanged()
                 }
                 BluetoothAdapter.ACTION_DISCOVERY_STARTED -> {
