@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- Use following permission if your app targets Android 12 (API level 31) or higher -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
@@ -15,7 +16,6 @@
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -24,7 +24,6 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="landscape" />
         <activity android:name=".BluetoothDeviceListActivity"
-            android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" />
     </application>
 

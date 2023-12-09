@@ -9,6 +9,7 @@ import android.content.Intent
 import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -16,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.IOException
+import java.util.UUID
 
 class BluetoothManager(private val activity: AppCompatActivity) {
     private lateinit var bluetoothSocket: BluetoothSocket
@@ -86,8 +88,11 @@ class BluetoothManager(private val activity: AppCompatActivity) {
     @SuppressLint("MissingPermission")
     fun connectToBluetoothDevice(device: BluetoothDevice) {
         try {
-            bluetoothSocket = device.createRfcommSocketToServiceRecord(device.uuids[0].uuid)
+            Log.d("BluetoothManager", "Connecting to device: ${device.name} (${device.address})")
+            val sppUUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+            bluetoothSocket = device.createRfcommSocketToServiceRecord(sppUUID)
             bluetoothSocket.connect()
+            Log.d("BluetoothManager", "Connected")
         }
         catch (e: IOException) {
             Toast.makeText(activity, "Failed to connect to device: ${e.message}", Toast.LENGTH_SHORT).show()
