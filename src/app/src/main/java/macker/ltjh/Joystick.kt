@@ -21,7 +21,7 @@ class Joystick @JvmOverloads constructor(
     private var centerY: Float = 0f
 ) : View(context, attrs, defStyleAttr) {
 
-    private var baseRadius = 450f // Default base radius for the joystick
+    private var baseRadius = 350f // Default base radius for the joystick
     private var hatRadius = 50f // Default hat (handle) radius for the joystick
     private var hatX = centerX
     private var hatY = centerY
