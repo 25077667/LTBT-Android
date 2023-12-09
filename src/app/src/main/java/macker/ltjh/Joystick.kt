@@ -22,10 +22,13 @@ class Joystick @JvmOverloads constructor(
     private var centerY: Float = 0f
 ) : View(context, attrs, defStyleAttr) {
 
-    private var baseRadius = 100f // Default base radius for the joystick
+    private var baseRadius = 450f // Default base radius for the joystick
     private var hatRadius = 50f // Default hat (handle) radius for the joystick
     private var hatX = centerX
     private var hatY = centerY
+
+    // True if the joystick is on the "left side" of the screen, false otherwise
+    private var isLeftSide = centerX < (width / 2f)
 
     private val paintBase = Paint().apply {
         color = Color.GRAY
@@ -41,25 +44,6 @@ class Joystick @JvmOverloads constructor(
 
     private var moveListener: OnMoveListener? = null
 
-    init {
-        // Set up touch listener for joystick movement
-        this.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                    updatePosition(event.x, event.y)
-                    true
-                }
-
-                MotionEvent.ACTION_UP -> {
-                    resetPosition()
-                    true
-                }
-
-                else -> false
-            }
-        }
-    }
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val diameter = (baseRadius * 2).toInt()
@@ -72,7 +56,7 @@ class Joystick @JvmOverloads constructor(
         super.onDraw(canvas)
     }
 
-    private fun updatePosition(x: Float, y: Float) {
+     fun updatePosition(x: Float, y: Float) {
         val distance = sqrt((x - centerX).pow(2) + (y - centerY).pow(2))
         val angle = atan2(y - centerY, x - centerX)
 
@@ -88,16 +72,16 @@ class Joystick @JvmOverloads constructor(
         // Notify the listener about joystick movement
         val normalizedAngle = if (angle < 0) angle + (2 * kotlin.math.PI).toFloat() else angle
         val normalizedDistance = min(distance, baseRadius) / baseRadius // Normalized distance in [0, 1]
-        moveListener?.invoke(normalizedAngle, normalizedDistance)
+        moveListener?.invoke(normalizedAngle, normalizedDistance, isLeftSide)
     }
 
-    private fun resetPosition() {
+     fun resetPosition() {
         hatX = centerX
         hatY = centerY
         invalidate()
 
         // Notify the listener about joystick reset
-        moveListener?.invoke(0f, 0f)
+        moveListener?.invoke(0f, 0f, false)
     }
 
     fun setOnMoveListener(listener: OnMoveListener) {
@@ -106,10 +90,10 @@ class Joystick @JvmOverloads constructor(
 
 //    OnMoveListener interface
     interface OnMoveListener {
-        fun onMove(angle: Float, strength: Float)
+        fun onMove(angle: Float, strength: Float, isLeftSide : Boolean)
 
-        fun invoke(angle: Float, strength: Float) {
-            onMove(angle, strength)
+        fun invoke(angle: Float, strength: Float, isLeftSide : Boolean) {
+            onMove(angle, strength, isLeftSide)
         }
     }
 
