@@ -18,7 +18,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ControlActivity" />
+        <activity android:name=".ControlActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="landscape" />
     </application>
 
 </manifest>

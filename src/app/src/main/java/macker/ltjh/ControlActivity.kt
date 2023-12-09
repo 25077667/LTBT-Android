@@ -1,11 +1,12 @@
 package macker.ltjh
+import android.view.View
 
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
+import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-
 class ControlActivity : AppCompatActivity() {
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var layout: ControlActivityLayout
@@ -64,9 +65,9 @@ class ControlActivity : AppCompatActivity() {
                 sendMessageToBluetooth(message)
             }
         })
+
         return joystick
     }
-
 
     private fun sendMessageToBluetooth(message: String) {
         val deviceAddress = "YOUR_HC-05_OR_HC-06_ADDRESS_HERE"

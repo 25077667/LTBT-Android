@@ -28,7 +28,11 @@ class Joystick @JvmOverloads constructor(
     private var hatY = centerY
 
     // True if the joystick is on the "left side" of the screen, false otherwise
-    private var isLeftSide = centerX < (width / 2f)
+    private var isLeftSide = centerX < (getScreenWidth() / 2f)
+
+    private fun getScreenWidth(): Float {
+        return context.resources.displayMetrics.widthPixels.toFloat()
+    }
 
     private val paintBase = Paint().apply {
         color = Color.GRAY
