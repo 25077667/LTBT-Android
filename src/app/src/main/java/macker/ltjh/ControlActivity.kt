@@ -101,8 +101,7 @@ class ControlActivity : AppCompatActivity() {
     }
 
     private fun sendMessageToBluetooth(message: String) {
-        val deviceAddress = "YOUR_HC-05_OR_HC-06_ADDRESS_HERE"
-        bluetoothManager.sendMessage(deviceAddress, message)
+        bluetoothManager.sendMessage(message)
     }
 
     private fun calculateMotorControl(angle: Float, strength: Float, motorName: String): String {

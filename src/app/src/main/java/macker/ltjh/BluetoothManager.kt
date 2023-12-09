@@ -1,23 +1,55 @@
 package macker.ltjh
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Intent
+import android.app.AlertDialog
 import android.content.pm.PackageManager
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.io.IOException
 
-class BluetoothManager(private val activity: Activity) {
+class BluetoothManager(private val activity: AppCompatActivity) {
+    private lateinit var bluetoothSocket: BluetoothSocket
+    private var selectedDevice: BluetoothDevice? = null
 
-    private val REQUEST_ENABLE_BLUETOOTH = 1
-    private val LOCATION_PERMISSION_REQUEST = 2
-    private val BLUETOOTH_CONNECT_PERMISSION_REQUEST = 3
-    // ... other variables ...
+    private val startForResult = activity.registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data: Intent? = result.data
+            if (data == null) {
+                Toast.makeText(activity, "Failed to get device", Toast.LENGTH_SHORT).show()
+                return@registerForActivityResult
+            }
 
-    // ... sendMessage function ...
+            selectedDevice = data.getParcelableExtra<BluetoothDevice>("selected_device")
+            selectedDevice?.let { connectToBluetoothDevice(it) }
+        } else {
+            Toast.makeText(activity, "Failed to get device", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    init {
+        if (!hasLocationPermission())
+            requestLocationPermission()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !hasBluetoothConnectPermission())
+            requestBluetoothConnectPermission()
+
+        showBluetoothDeviceList()
+    }
+
+    private fun showBluetoothDeviceList() {
+        val intent = Intent(activity, BluetoothDeviceListActivity::class.java)
+        startForResult.launch(intent)
+    }
 
     private fun hasLocationPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
@@ -30,10 +62,11 @@ class BluetoothManager(private val activity: Activity) {
         ActivityCompat.requestPermissions(
             activity,
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            LOCATION_PERMISSION_REQUEST
+            Companion.LOCATION_PERMISSION_REQUEST
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun hasBluetoothConnectPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             activity,
@@ -41,6 +74,7 @@ class BluetoothManager(private val activity: Activity) {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun requestBluetoothConnectPermission() {
         ActivityCompat.requestPermissions(
             activity,
@@ -49,49 +83,40 @@ class BluetoothManager(private val activity: Activity) {
         )
     }
 
-    // Modify onRequestPermissionsResult to handle result of BLUETOOTH_CONNECT permission request
-    fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        when (requestCode) {
-            LOCATION_PERMISSION_REQUEST -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Location permission granted, proceed with sending the message
-                } else {
-                    // Location permission denied, handle accordingly or notify the user
-                }
-            }
-            BLUETOOTH_CONNECT_PERMISSION_REQUEST -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Bluetooth Connect permission granted, proceed with sending the message
-                } else {
-                    // Bluetooth Connect permission denied, handle accordingly or notify the user
-                }
-            }
-        }
-    }
-
-    // ... onActivityResult function ...
-
-    // Modify the sendMessage function to check both location and Bluetooth Connect permissions
-    fun sendMessage(deviceAddress: String, message: String) {
-        // ... existing code ...
-
-        if (!hasLocationPermission() || !hasBluetoothConnectPermission()) {
-            requestLocationPermission()
-            requestBluetoothConnectPermission()
-            return
-        }
-
-        // ... existing code ...
-
+    @SuppressLint("MissingPermission")
+    fun connectToBluetoothDevice(device: BluetoothDevice) {
         try {
-            // ... existing try block ...
-        } catch (e: SecurityException) {
-            // Handle the case where the user has not granted permission
-        } catch (e: java.io.IOException) {
-            // Handle the case where Bluetooth connection fails
-            e.printStackTrace()
+            bluetoothSocket = device.createRfcommSocketToServiceRecord(device.uuids[0].uuid)
+            bluetoothSocket.connect()
+        }
+        catch (e: IOException) {
+            Toast.makeText(activity, "Failed to connect to device: ${e.message}", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            AlertDialog.Builder(activity)
+                .setTitle("Unknown Error")
+                .setMessage("Failed to connect to device: ${e.message}")
+                .setPositiveButton("OK", null)
+                .show()
         }
     }
 
-    // ... rest of the class ...
+    fun sendMessage(message: String) {
+        try {
+            bluetoothSocket.outputStream.write(message.toByteArray())
+        }
+        catch (e: IOException) {
+            Toast.makeText(activity, "Failed to connect to device: ${e.message}", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            AlertDialog.Builder(activity)
+                .setTitle("Unknown Error")
+                .setMessage("Failed to send message: ${e.message}")
+                .setPositiveButton("OK", null)
+                .show()
+        }
+    }
+
+    companion object {
+        const val LOCATION_PERMISSION_REQUEST = 2
+        const val BLUETOOTH_CONNECT_PERMISSION_REQUEST = 3
+    }
 }
