@@ -1,3 +1,6 @@
+package macker.ltjh
+
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -10,6 +13,7 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
+@SuppressLint("ClickableViewAccessibility")
 class Joystick @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -35,20 +39,22 @@ class Joystick @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
-    private var moveListener: ((Float, Float) -> Unit)? = null
+    private var moveListener: OnMoveListener? = null
 
     init {
         // Set up touch listener for joystick movement
-        setOnTouchListener { _, event ->
+        this.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                     updatePosition(event.x, event.y)
                     true
                 }
+
                 MotionEvent.ACTION_UP -> {
                     resetPosition()
                     true
                 }
+
                 else -> false
             }
         }
@@ -94,7 +100,17 @@ class Joystick @JvmOverloads constructor(
         moveListener?.invoke(0f, 0f)
     }
 
-    fun setOnMoveListener(listener: (Float, Float) -> Unit) {
+    fun setOnMoveListener(listener: OnMoveListener) {
         moveListener = listener
     }
+
+//    OnMoveListener interface
+    interface OnMoveListener {
+        fun onMove(angle: Float, strength: Float)
+
+        fun invoke(angle: Float, strength: Float) {
+            onMove(angle, strength)
+        }
+    }
+
 }

@@ -1,6 +1,5 @@
 package macker.ltjh
 
-import Joystick
 import android.os.Bundle
 import android.view.MotionEvent
 import android.widget.RelativeLayout
@@ -25,13 +24,6 @@ class ControlActivity : AppCompatActivity() {
                     // Construct a new joystick at the touched position
                     val joystick = createJoystick(event.x, event.y)
                     layout.addView(joystick)
-
-                    // Set listener for the new joystick's movements
-                    joystick.setOnMoveListener { angle, strength ->
-                        val message = calculateMotorControl(angle, strength, "MOTOR")
-                        sendMessageToBluetooth(message)
-                    }
-
                     true
                 }
                 else -> false
@@ -46,6 +38,12 @@ class ControlActivity : AppCompatActivity() {
             ConstraintLayout.LayoutParams.WRAP_CONTENT
         )
         joystick.layoutParams = layoutParams
+        joystick.setOnMoveListener(object : Joystick.OnMoveListener {
+            override fun onMove(angle: Float, strength: Float) {
+                val message = calculateMotorControl(angle, strength, "MOTOR")
+                sendMessageToBluetooth(message)
+            }
+        })
         return joystick
     }
 
