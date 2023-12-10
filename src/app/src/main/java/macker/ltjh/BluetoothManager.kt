@@ -32,7 +32,7 @@ class BluetoothManager(private val activity: AppCompatActivity) {
                 return@registerForActivityResult
             }
 
-            selectedDevice = data.getParcelableExtra<BluetoothDevice>("selected_device")
+            selectedDevice = data.getParcelableExtra("selected_device")
             selectedDevice?.let { connectToBluetoothDevice(it) }
         } else {
             Toast.makeText(activity, "Failed to get device", Toast.LENGTH_SHORT).show()
@@ -64,7 +64,7 @@ class BluetoothManager(private val activity: AppCompatActivity) {
         ActivityCompat.requestPermissions(
             activity,
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            Companion.LOCATION_PERMISSION_REQUEST
+            LOCATION_PERMISSION_REQUEST
         )
     }
 

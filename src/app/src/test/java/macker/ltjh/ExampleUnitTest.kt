@@ -2,7 +2,6 @@ package macker.ltjh
 
 import org.junit.jupiter.api.Test
 
-import org.junit.Assert.*
 import org.junit.jupiter.api.Assertions
 
 /**

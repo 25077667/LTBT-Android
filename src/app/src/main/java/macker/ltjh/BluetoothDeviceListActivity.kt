@@ -9,7 +9,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ListView
@@ -42,7 +41,7 @@ class BluetoothDeviceListActivity : Activity() {
             val device = devicesList[position]
             val returnIntent = Intent()
             returnIntent.putExtra("selected_device", device)
-            setResult(Activity.RESULT_OK, returnIntent)
+            setResult(RESULT_OK, returnIntent)
             finish()
         }
     }
@@ -69,7 +68,7 @@ class BluetoothDeviceListActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_ENABLE_BT) {
-            if (resultCode == Activity.RESULT_OK) {
+            if (resultCode == RESULT_OK) {
                 // Bluetooth is now enabled, so we can start the discovery
                 startDiscovery()
             } else {
