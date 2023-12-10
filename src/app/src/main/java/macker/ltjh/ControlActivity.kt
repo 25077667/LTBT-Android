@@ -1,5 +1,6 @@
 package macker.ltjh
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
@@ -100,13 +101,56 @@ class ControlActivity : AppCompatActivity() {
         return joystick
     }
 
-    private fun sendMessageToBluetooth(message: String) {
+    private fun sendMessageToBluetooth(message: ByteArray) {
         bluetoothManager.sendMessage(message)
     }
 
-    private fun calculateMotorControl(angle: Float, strength: Float, motorName: String): String {
-        // Use angle and strength values to calculate motor control message
-        // ...
-        return "DUMMY" // Replace with your motor control message logic
+    private fun calculateMotorControl(angle: Float, strength: Float, motorName: String): ByteArray
+    {
+        val newlinePadding = '\n'.code.toByte()
+        val magicByte = 0x37.toByte()
+
+//        if angle and strength are 0, stop the motors
+        if (angle == 0f && strength == 0f) {
+            val checksum = (magicByte + 0x00.toByte() + 0x00.toByte()).toByte()
+            // Protocol Format: [Magic Byte (1 byte)][Motor Name (1 Byte)][Speed (1 byte)][Checksum (1 byte)]
+            return byteArrayOf(magicByte, 0x00.toByte(), 0x00.toByte(), checksum, newlinePadding)
+        }
+
+//        We have 4 motors (MOTOR_0, MOTOR_1, MOTOR_2, MOTOR_3) been mapped from 2 joysticks (MOTOR_L, MOTOR_R)
+//        MOTOR_L is mapped to MOTOR_0 and MOTOR_1
+//        MOTOR_R is mapped to MOTOR_2 and MOTOR_3
+
+//        We convert the angle and speed to x-y coordinates with Euler's formula
+//        x = r * cos(theta)
+//        y = r * sin(theta)
+//        where r is the speed and theta is the angle
+//        We then map the x-y coordinates to the motors
+//        if y > 0, MOTOR_0 (left side) will move forward
+//        if y < 0, MOTOR_0 (left side) will move backward
+//        if x > 0 MOTOR_1 (left side) will move forward
+//        if x < 0 MOTOR_1 (left side) will move backward
+//        same for MOTOR_2 and MOTOR_3 (right side)
+
+        val isLandscape = if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 1 else 0
+        val x = strength * kotlin.math.cos(angle)
+        val y = strength * kotlin.math.sin(angle + isLandscape * kotlin.math.PI.toFloat())
+
+        val motor0Message = byteArrayOf(0x00.toByte(), (y * 127).toInt().toByte())
+        val motor1Message = byteArrayOf(0x01.toByte(), (x * 127).toInt().toByte())
+        val motor2Message = byteArrayOf(0x02.toByte(), (y * 127).toInt().toByte())
+        val motor3Message = byteArrayOf(0x03.toByte(), (x * 127).toInt().toByte())
+
+//        if left side, magicByte + motor0Message + motor1Message
+//        if right side, magicByte motor2Message + motor3Message
+        val concatenatedMessage = byteArrayOf(magicByte) + when (motorName) {
+            "MOTOR_L" -> motor0Message + motor1Message
+            "MOTOR_R" -> motor2Message + motor3Message
+            else -> byteArrayOf()
+        }
+
+//        checksum is the sum of all the bytes in the message
+        val checksum = concatenatedMessage.sum().toByte()
+        return concatenatedMessage + checksum + newlinePadding
     }
 }

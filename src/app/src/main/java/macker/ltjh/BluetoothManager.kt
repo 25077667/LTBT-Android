@@ -105,9 +105,10 @@ class BluetoothManager(private val activity: AppCompatActivity) {
         }
     }
 
-    fun sendMessage(message: String) {
+    fun sendMessage(message: ByteArray) {
         try {
-            bluetoothSocket.outputStream.write(message.toByteArray())
+            bluetoothSocket.outputStream.write(message)
+            bluetoothSocket.outputStream.flush()
         }
         catch (e: IOException) {
             Toast.makeText(activity, "Failed to connect to device: ${e.message}", Toast.LENGTH_SHORT).show()

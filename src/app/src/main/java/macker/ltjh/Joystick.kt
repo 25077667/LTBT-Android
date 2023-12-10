@@ -2,6 +2,7 @@ package macker.ltjh
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
