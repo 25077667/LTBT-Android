@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">makerLTJH</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="wi_fi">Wi-Fi</string>
 </resources>
