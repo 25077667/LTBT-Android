@@ -28,9 +28,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Call the function to start the animation
-        startAnimatingIcons()
-
         // Initialize RemoteEndpoint with the return value of the button (Bluetooth), it goes to the
         // BluetoothDeviceListActivity and returns the selected device, which is then passed to the
         // RemoteEndpoint constructor
@@ -51,13 +48,6 @@ class MainActivity : AppCompatActivity() {
         // implemented yet, and we don't do anything else.
         findViewById<Button>(R.id.wifiButton).setOnClickListener {
             Toast.makeText(this, "Wi-Fi P2P not implemented yet", Toast.LENGTH_SHORT).show()
-        }
-
-        if (RemoteEndpointHolder.isInitialized()){
-            // Show the remoteEndpoint info on the screen, it's a textview on the left top corner
-            // Create a new textview, and set the text to the remoteEndpoint.show() value
-            val textView = TextView(this)
-            textView.text = RemoteEndpointHolder.get().show()
         }
     }
 
@@ -92,6 +82,14 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         doAnimate.set(false)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        doAnimate.set(true)
+        displayRemoteEndpointConfig()
+
+        startAnimatingIcons()
     }
 
     private fun startAnimatingIcons() {
@@ -140,6 +138,16 @@ class MainActivity : AppCompatActivity() {
         ObjectAnimator.ofFloat(imageView, "translationY", -frameLayout.height.toFloat()).apply {
             interpolator = LinearInterpolator()
         }.start()
+    }
+
+    private fun displayRemoteEndpointConfig() {
+        if (!RemoteEndpointHolder.isInitialized())
+        {
+            Log.d("MainActivity", "RemoteEndpoint not initialized")
+            return
+        }
+        val textView = findViewById<TextView>(R.id.remoteEndpointTextView)
+        textView.text = RemoteEndpointHolder.get().show()
     }
 
     private fun switchToControlActivity() {
