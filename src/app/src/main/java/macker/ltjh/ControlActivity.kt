@@ -1,14 +1,16 @@
 package macker.ltjh
 
+import android.bluetooth.BluetoothDevice
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-class ControlActivity : AppCompatActivity() {
+class ControlActivity() : AppCompatActivity() {
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var layout: ControlActivityLayout
+    private lateinit var remoteEndpoint: RemoteEndpoint
     companion object {
         const val MAX_NUM_JOYSTICKS = 2 // Define max number of joysticks
     }
@@ -20,8 +22,24 @@ class ControlActivity : AppCompatActivity() {
         setContentView(R.layout.activity_control)
         layout = findViewById(R.id.control_layout)
 
+        // fetch the remoteEndpoint from the MainActivity, it is serialized and passed to the
+        // ControlActivity
+        val remoteEndpointRaw = RemoteEndpointHolder.get()
+        if (remoteEndpointRaw.getDevice() is BluetoothDevice)
+            remoteEndpoint = RemoteEndpoint.create(remoteEndpointRaw.getDevice()) as BluetoothEndpoint
+        else
+            throw IllegalArgumentException("Unknown device type")
+
         // Initialize BluetoothManager
-        bluetoothManager = BluetoothManager(this)
+        // Check if remoteEndpoint is a BluetoothEndpoint and initialize BluetoothManager
+        if (remoteEndpoint is BluetoothEndpoint) {
+            val bluetoothDevice = remoteEndpoint.getDevice() as BluetoothDevice
+            bluetoothManager = BluetoothManager(bluetoothDevice, this)
+        } else {
+            // Handle non-Bluetooth endpoints or throw an exception
+            Log.d("ControlActivity", "RemoteEndpoint is not a BluetoothEndpoint")
+            throw IllegalStateException("ControlActivity requires a BluetoothEndpoint")
+        }
 
         layout.setOnTouchListener { view, event ->
             view.performClick() // Perform click to ensure that the view receives click events

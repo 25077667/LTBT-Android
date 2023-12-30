@@ -19,8 +19,6 @@ import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
     private val doAnimate = AtomicBoolean(true)
-    private lateinit var remoteEndpoint: RemoteEndpoint
-    private lateinit var controlActivity: ControlActivity
     companion object {
         private const val bluetoothRequestCode = 1
         private const val wifiRequestCode = 2 // Wi-Fi P2P not implemented yet
@@ -40,12 +38,12 @@ class MainActivity : AppCompatActivity() {
         // next step, we use RemoteEndpoint.getDevice() to get the BluetoothDevice, and pass it to
         // the ControlActivityLayout constructor
         findViewById<Button>(R.id.bluetoothButton).setOnClickListener {
-            if (::remoteEndpoint.isInitialized) {
-                // pass to control activity directly
-                controlActivity = ControlActivity(remoteEndpoint.getDevice())
+            if (RemoteEndpointHolder.isInitialized()) {
+                switchToControlActivity()
+            } else {
+                val intent = Intent(this, BluetoothDeviceListActivity::class.java)
+                startActivityForResult(intent, bluetoothRequestCode)
             }
-            val intent = Intent(this, BluetoothDeviceListActivity::class.java)
-            startActivityForResult(intent, bluetoothRequestCode)
         }
 
         // Wi-Fi p2p is not implemented yet, so we'll just use Bluetooth for now
@@ -55,10 +53,12 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Wi-Fi P2P not implemented yet", Toast.LENGTH_SHORT).show()
         }
 
-        // Show the remoteEndpoint info on the screen, it's a textview on the left top corner
-        // Create a new textview, and set the text to the remoteEndpoint.show() value
-        val textView = TextView(this)
-        textView.text = remoteEndpoint.show()
+        if (RemoteEndpointHolder.isInitialized()){
+            // Show the remoteEndpoint info on the screen, it's a textview on the left top corner
+            // Create a new textview, and set the text to the remoteEndpoint.show() value
+            val textView = TextView(this)
+            textView.text = RemoteEndpointHolder.get().show()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
 
-            remoteEndpoint = RemoteEndpoint.create(device)
+            RemoteEndpointHolder.set(RemoteEndpoint.create(device))
         } else if (requestCode == wifiRequestCode && resultCode == Activity.RESULT_OK) {
             Toast.makeText(this, "Wi-Fi P2P not implemented yet", Toast.LENGTH_SHORT).show()
         }
@@ -81,12 +81,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         // If remoteEndpoint is not initialized, we don't do anything
-        if (!::remoteEndpoint.isInitialized) {
+        if (!RemoteEndpointHolder.isInitialized()) {
             Log.d("MainActivity", "RemoteEndpoint not initialized")
             return
         }
 
-        controlActivity = ControlActivity(remoteEndpoint.getDevice())
+        switchToControlActivity()
     }
 
     override fun onPause() {
@@ -140,5 +140,11 @@ class MainActivity : AppCompatActivity() {
         ObjectAnimator.ofFloat(imageView, "translationY", -frameLayout.height.toFloat()).apply {
             interpolator = LinearInterpolator()
         }.start()
+    }
+
+    private fun switchToControlActivity() {
+        // intent controlActivity and pass the remoteEndpoint to it
+        val intent = Intent(this, ControlActivity::class.java)
+        startActivity(intent)
     }
 }
