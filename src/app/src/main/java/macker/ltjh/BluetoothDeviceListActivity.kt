@@ -25,7 +25,7 @@ import androidx.core.content.ContextCompat
 class BluetoothDeviceListActivity : AppCompatActivity() {
     private lateinit var listView: ListView
     private lateinit var adapter: ArrayAdapter<String>
-    private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+    private var bluetoothAdapter: BluetoothAdapter? = null
     private val devicesList: MutableList<BluetoothDevice> = mutableListOf()
     private val devicesNameList: MutableList<String> = mutableListOf()
     private lateinit var progressBar: ProgressBar
@@ -67,10 +67,8 @@ class BluetoothDeviceListActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!hasLocationPermission())
-            requestLocationPermission()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !hasBluetoothConnectPermission())
-            requestBluetoothConnectPermission()
+        checkBluetoothPermissions()
+        initBluetoothAdapter()
 
         setContentView(R.layout.activity_bluetooth_devices)
         progressBar = findViewById(R.id.progressBar)
@@ -91,6 +89,27 @@ class BluetoothDeviceListActivity : AppCompatActivity() {
         }
     }
 
+    private fun initBluetoothAdapter() {
+        if (bluetoothAdapter != null)
+            return
+
+        val bluetoothManager =
+            getSystemService(BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager
+        bluetoothAdapter = bluetoothManager.adapter
+
+        if (bluetoothAdapter == null) {
+            Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_SHORT).show()
+            finish()
+        }
+    }
+
+    private fun checkBluetoothPermissions() {
+        if (!hasLocationPermission())
+            requestLocationPermission()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !hasBluetoothConnectPermission())
+            requestBluetoothConnectPermission()
+    }
+
     @SuppressLint("MissingPermission")
     private fun startDiscovery() {
         if (bluetoothAdapter?.isEnabled == true) {
@@ -101,7 +120,7 @@ class BluetoothDeviceListActivity : AppCompatActivity() {
             filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
             registerReceiver(receiver, filter)
 
-            bluetoothAdapter.startDiscovery()
+            bluetoothAdapter!!.startDiscovery()
         } else {
             // Prompt the user to enable Bluetooth
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
@@ -158,7 +177,7 @@ class BluetoothDeviceListActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         if (bluetoothAdapter?.isDiscovering == true) {
-            bluetoothAdapter.cancelDiscovery()
+            bluetoothAdapter!!.cancelDiscovery()
         }
         unregisterReceiver(receiver)
     }
