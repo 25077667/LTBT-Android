@@ -5,9 +5,12 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
+import android.view.View
+import android.view.Window
+import android.view.WindowInsets
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-class ControlActivity() : AppCompatActivity() {
+class ControlActivity : AppCompatActivity() {
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var layout: ControlActivityLayout
     private lateinit var remoteEndpoint: RemoteEndpoint
@@ -19,14 +22,48 @@ class ControlActivity() : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        hideSystemUI()
         setContentView(R.layout.activity_control)
         layout = findViewById(R.id.control_layout)
 
+        initRemotedEndpoint()
+
+        layout.setOnTouchListener { view, event ->
+            view.performClick() // Perform click to ensure that the view receives click events
+            handleTouchEvent(event)
+            true // Always return true to indicate that the listener has consumed the event.
+        }
+    }
+
+    private fun hideSystemUI() {
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+        }
+
+        // Hide the navigation bar.
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            window.insetsController?.hide(WindowInsets.Type.navigationBars())
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
+        }
+    }
+
+    private fun initRemotedEndpoint() {
         // fetch the remoteEndpoint from the MainActivity, it is serialized and passed to the
         // ControlActivity
         val remoteEndpointRaw = RemoteEndpointHolder.get()
         if (remoteEndpointRaw.getDevice() is BluetoothDevice)
-            remoteEndpoint = RemoteEndpoint.create(remoteEndpointRaw.getDevice()) as BluetoothEndpoint
+            remoteEndpoint =
+                RemoteEndpoint.create(remoteEndpointRaw.getDevice()) as BluetoothEndpoint
         else
             throw IllegalArgumentException("Unknown device type")
 
@@ -39,12 +76,6 @@ class ControlActivity() : AppCompatActivity() {
             // Handle non-Bluetooth endpoints or throw an exception
             Log.d("ControlActivity", "RemoteEndpoint is not a BluetoothEndpoint")
             throw IllegalStateException("ControlActivity requires a BluetoothEndpoint")
-        }
-
-        layout.setOnTouchListener { view, event ->
-            view.performClick() // Perform click to ensure that the view receives click events
-            handleTouchEvent(event)
-            true // Always return true to indicate that the listener has consumed the event.
         }
     }
 
