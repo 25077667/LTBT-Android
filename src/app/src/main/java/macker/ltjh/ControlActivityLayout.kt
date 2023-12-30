@@ -30,12 +30,6 @@ class ControlActivityLayout : ConstraintLayout {
         return super.onTouchEvent(event)
     }
 
-    override fun performClick(): Boolean {
-        // Your custom click handling logic here
-        // For example, dispatching a click event to listeners
-        return super.performClick()
-    }
-
     private fun isClick(event: MotionEvent): Boolean {
         val touchSlop = 5 // Define your threshold for a click
         return event.x < touchSlop && event.y < touchSlop

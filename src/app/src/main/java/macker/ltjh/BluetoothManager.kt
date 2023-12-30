@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import java.io.IOException
 import java.util.UUID
 
-class BluetoothManager(private val selectedDevice: BluetoothDevice, private val activity: AppCompatActivity) {
+class BluetoothManager(selectedDevice: BluetoothDevice, private val activity: AppCompatActivity) {
     private lateinit var bluetoothSocket: BluetoothSocket
     companion object {
         const val LOCATION_PERMISSION_REQUEST = 2
