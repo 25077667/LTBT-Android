@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 class ControlActivity : AppCompatActivity() {
     private lateinit var bluetoothManager: BluetoothManager
-    private lateinit var layout: ControlActivityLayout
+    private lateinit var layout: ConstraintLayout
     private lateinit var remoteEndpoint: RemoteEndpoint
     private lateinit var menuButton: ImageButton
     private var isMenuOpen = false
@@ -99,36 +99,52 @@ class ControlActivity : AppCompatActivity() {
     private fun openMenu() {
         Log.d("ControlActivity", "Menu opened")
         // Load the slide-in animation for the fragment
-        val slideInAnimation = AnimationUtils.loadAnimation(this, R.anim.enter_from_left)
+        val slideInAnimation = AnimationUtils.loadAnimation(this, R.anim.menu_layout_enter_from_left)
 
         // Begin the fragment transaction
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
 
-        fragmentTransaction.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_left).
+        fragmentTransaction.setCustomAnimations(R.anim.menu_layout_enter_from_left, R.anim.menu_layout_exit_to_left).
             replace(R.id.fragment_container, MenuFragment()).
             commit()
 
-        // Apply the slide-in animation to the menu layout
-        val menuLayout = findViewById<LinearLayout>(R.id.menu_layout)
+//        set animation listener to the slide-in animation
+        slideInAnimation.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation?) {}
+            override fun onAnimationEnd(animation: Animation?) {
+                // Show the menu after the animation ends
+                menuLayout.visibility = View.VISIBLE
+                isMenuOpen = true
+
+                // move the menuButton to the right
+                val bordLayout = findViewById<LinearLayout>(R.id.menu_layout_border)
+                menuButton.translationX += bordLayout.width.toFloat() - menuButton.width / 2
+            }
+            override fun onAnimationRepeat(animation: Animation?) {}
+        })
+
+        // Start the slide-in animation
         menuLayout.startAnimation(slideInAnimation)
-        menuLayout.visibility = View.VISIBLE
-        isMenuOpen = true
     }
 
     private fun closeMenu() {
         Log.d("ControlActivity", "Menu closed")
-        val slideOutAnimation = AnimationUtils.loadAnimation(this, R.anim.exit_to_left)
+        val slideOutAnimation = AnimationUtils.loadAnimation(this, R.anim.menu_layout_exit_to_left)
         slideOutAnimation.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation?) {}
             override fun onAnimationEnd(animation: Animation?) {
                 // Hide the menu after the animation ends
                 menuLayout.visibility = View.GONE
+                isMenuOpen = false
+
+                //        Move the menuButton back to the left
+                val bordLayout = findViewById<LinearLayout>(R.id.menu_layout_border)
+                menuButton.translationX -= bordLayout.width.toFloat() - menuButton.width / 2
             }
             override fun onAnimationRepeat(animation: Animation?) {}
         })
         menuLayout.startAnimation(slideOutAnimation)
-        isMenuOpen = false
     }
 
     @Deprecated("Deprecated in Java")
@@ -141,6 +157,10 @@ class ControlActivity : AppCompatActivity() {
     }
 
     private fun handleTouchEvent(event: MotionEvent) {
+        if (isMenuOpen) {
+            return      // disable joystick when menu is open
+        }
+
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                 if (activePointers.size < MAX_NUM_JOYSTICKS) { // Only create new joystick if max not reached
