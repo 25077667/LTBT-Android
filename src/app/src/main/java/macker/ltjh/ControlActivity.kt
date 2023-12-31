@@ -31,8 +31,9 @@ class ControlActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
         setContentView(R.layout.activity_control)
+
+        hideSystemUI()
         layout = findViewById(R.id.control_layout)
 
         initRemotedEndpoint()
@@ -56,9 +57,9 @@ class ControlActivity : AppCompatActivity() {
     }
 
     private fun hideSystemUI() {
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
             window.setDecorFitsSystemWindows(false)
+            window.insetsController?.hide(WindowInsets.Type.statusBars())
         } else {
             @Suppress("DEPRECATION")
             window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -73,7 +74,9 @@ class ControlActivity : AppCompatActivity() {
             @Suppress("DEPRECATION")
             window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                     or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
         }
     }
 
@@ -132,7 +135,7 @@ class ControlActivity : AppCompatActivity() {
     }
 
     private fun closeMenu() {
-        Log.d("ControlActivity", "Menu closed")
+            Log.d("ControlActivity", "Menu closed")
         val slideOutAnimation = AnimationUtils.loadAnimation(this, R.anim.menu_layout_exit_to_left)
         slideOutAnimation.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation?) {}

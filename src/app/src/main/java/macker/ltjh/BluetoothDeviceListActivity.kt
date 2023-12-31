@@ -30,6 +30,7 @@ class BluetoothDeviceListActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     companion object {
         private const val REQUEST_ENABLE_BT = 1
+        private const val PERMISSION_REQUEST_BLUETOOTH_SCAN = 100
     }
 
     private fun hasLocationPermission(): Boolean {
@@ -103,10 +104,36 @@ class BluetoothDeviceListActivity : AppCompatActivity() {
     }
 
     private fun checkBluetoothPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED)
+            requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN), PERMISSION_REQUEST_BLUETOOTH_SCAN)
         if (!hasLocationPermission())
             requestLocationPermission()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !hasBluetoothConnectPermission())
             requestBluetoothConnectPermission()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if (requestCode == PERMISSION_REQUEST_BLUETOOTH_SCAN) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Bluetooth scan permission granted", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Bluetooth scan permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+        if (requestCode == BluetoothManager.LOCATION_PERMISSION_REQUEST) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+        if (requestCode == BluetoothManager.BLUETOOTH_CONNECT_PERMISSION_REQUEST) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Bluetooth connect permission granted", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Bluetooth connect permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")
