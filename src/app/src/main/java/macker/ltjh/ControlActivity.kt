@@ -8,12 +8,19 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.Window
 import android.view.WindowInsets
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.widget.ImageButton
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 class ControlActivity : AppCompatActivity() {
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var layout: ControlActivityLayout
     private lateinit var remoteEndpoint: RemoteEndpoint
+    private lateinit var menuButton: ImageButton
+    private var isMenuOpen = false
+    private lateinit var menuLayout: LinearLayout
     companion object {
         const val MAX_NUM_JOYSTICKS = 2 // Define max number of joysticks
     }
@@ -27,6 +34,16 @@ class ControlActivity : AppCompatActivity() {
         layout = findViewById(R.id.control_layout)
 
         initRemotedEndpoint()
+        menuButton = findViewById(R.id.menuButton)
+        menuLayout = findViewById(R.id.menu_layout)
+        val menuButton: ImageButton = findViewById(R.id.menuButton)
+        menuButton.setOnClickListener {
+            if (isMenuOpen) {
+                closeMenu()
+            } else {
+                openMenu()
+            }
+        }
 
         layout.setOnTouchListener { view, event ->
             view.performClick() // Perform click to ensure that the view receives click events
@@ -76,6 +93,50 @@ class ControlActivity : AppCompatActivity() {
             // Handle non-Bluetooth endpoints or throw an exception
             Log.d("ControlActivity", "RemoteEndpoint is not a BluetoothEndpoint")
             throw IllegalStateException("ControlActivity requires a BluetoothEndpoint")
+        }
+    }
+
+    private fun openMenu() {
+        Log.d("ControlActivity", "Menu opened")
+        // Load the slide-in animation for the fragment
+        val slideInAnimation = AnimationUtils.loadAnimation(this, R.anim.enter_from_left)
+
+        // Begin the fragment transaction
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+
+        fragmentTransaction.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_left).
+            replace(R.id.fragment_container, MenuFragment()).
+            commit()
+
+        // Apply the slide-in animation to the menu layout
+        val menuLayout = findViewById<LinearLayout>(R.id.menu_layout)
+        menuLayout.startAnimation(slideInAnimation)
+        menuLayout.visibility = View.VISIBLE
+        isMenuOpen = true
+    }
+
+    private fun closeMenu() {
+        Log.d("ControlActivity", "Menu closed")
+        val slideOutAnimation = AnimationUtils.loadAnimation(this, R.anim.exit_to_left)
+        slideOutAnimation.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation?) {}
+            override fun onAnimationEnd(animation: Animation?) {
+                // Hide the menu after the animation ends
+                menuLayout.visibility = View.GONE
+            }
+            override fun onAnimationRepeat(animation: Animation?) {}
+        })
+        menuLayout.startAnimation(slideOutAnimation)
+        isMenuOpen = false
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if (isMenuOpen) {
+            closeMenu()
+        } else {
+            super.onBackPressed()
         }
     }
 
