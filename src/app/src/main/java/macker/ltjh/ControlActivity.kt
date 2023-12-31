@@ -12,6 +12,7 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 class ControlActivity : AppCompatActivity() {
@@ -21,6 +22,7 @@ class ControlActivity : AppCompatActivity() {
     private lateinit var menuButton: ImageButton
     private var isMenuOpen = false
     private lateinit var menuLayout: LinearLayout
+    private val menuFragment = MenuFragment.newInstance()
     companion object {
         const val MAX_NUM_JOYSTICKS = 2 // Define max number of joysticks
     }
@@ -44,6 +46,7 @@ class ControlActivity : AppCompatActivity() {
                 openMenu()
             }
         }
+        initMenuFragment()
 
         layout.setOnTouchListener { view, event ->
             view.performClick() // Perform click to ensure that the view receives click events
@@ -106,7 +109,7 @@ class ControlActivity : AppCompatActivity() {
         val fragmentTransaction = fragmentManager.beginTransaction()
 
         fragmentTransaction.setCustomAnimations(R.anim.menu_layout_enter_from_left, R.anim.menu_layout_exit_to_left).
-            replace(R.id.fragment_container, MenuFragment()).
+            replace(R.id.fragment_container, menuFragment).
             commit()
 
 //        set animation listener to the slide-in animation
@@ -145,6 +148,14 @@ class ControlActivity : AppCompatActivity() {
             override fun onAnimationRepeat(animation: Animation?) {}
         })
         menuLayout.startAnimation(slideOutAnimation)
+    }
+
+    private fun initMenuFragment() {
+        menuFragment.setOnSettingClickListener(object : MenuFragment.SettingCallback {
+            override fun onSettingClick() {
+                Toast.makeText(this@ControlActivity, "Setting clicked", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     @Deprecated("Deprecated in Java")

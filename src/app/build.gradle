@@ -55,6 +55,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     testImplementation "junit:junit:jUnitVersion"
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0'
+
     // Activity KTX for registerForActivityResult
     implementation 'androidx.activity:activity-ktx:1.2.0'
     // Fragment KTX for registerForActivityResult (if you use fragments)
