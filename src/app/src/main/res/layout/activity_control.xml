@@ -5,7 +5,6 @@
     android:id="@+id/control_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ADD8E6"
     android:clickable="true"
     tools:ignore="ExtraText"> <!-- Light-blue background color -->
 
@@ -23,7 +22,6 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@android:color/darker_gray"
             android:orientation="vertical"
             android:padding="2dp"
             android:id="@+id/menu_layout_border">
@@ -32,8 +30,7 @@
                 android:id="@+id/fragment_container"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"
-                android:background="@color/white" />
+                android:layout_weight="1" />
         </LinearLayout>
 
         <!-- Additional space to fill the rest of the screen -->

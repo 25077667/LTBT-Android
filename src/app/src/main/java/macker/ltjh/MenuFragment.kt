@@ -1,6 +1,7 @@
 package macker.ltjh
 
 import android.app.AlertDialog
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import android.widget.ListView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import java.io.File
 
 class MenuFragment : Fragment() {
@@ -22,16 +24,17 @@ class MenuFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_menu, container, false)
 
-        val menuItems = arrayOf("Setting", "Exit", "About", "Dump debug info")
+        val menuItems = arrayOf("Setting", "Light-Dark", "Exit", "About", "Dump debug info")
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, menuItems)
         val listView: ListView = view.findViewById(R.id.menu_list)
         listView.adapter = adapter
         listView.setOnItemClickListener { _, _, position, _ ->
             when (position) {
                 0 -> settingClickListener()
-                1 -> onExitClick()
-                2 -> onAboutClick()
-                3 -> dumpJsonInfo()
+                1 -> toggleLightDarkMode()
+                2 -> onExitClick()
+                3 -> onAboutClick()
+                4 -> dumpJsonInfo()
             }
         }
 
@@ -54,6 +57,24 @@ class MenuFragment : Fragment() {
     private fun settingClickListener() {
         Log.d("MenuFragment", "Setting clicked")
         settingCallback?.onSettingClick()
+    }
+
+    private fun toggleLightDarkMode() {
+//        Get current theme from system
+        val isDarkMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+
+//        print a debug information about the current theme
+        val beforeMode = if (isDarkMode) "Dark" else "Light"
+        Log.d("MenuFragment", "Current theme: $beforeMode")
+
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        }
+
+        val mode = if (isDarkMode) "Light" else "Dark"
+        Toast.makeText(requireContext(), "Switch to $mode mode", Toast.LENGTH_SHORT).show()
     }
 
     private fun onExitClick() {
