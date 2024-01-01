@@ -2,11 +2,11 @@ package macker.ltjh
 
 import android.bluetooth.BluetoothDevice
 import android.content.res.Configuration
+import android.net.wifi.p2p.WifiP2pManager
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.view.Window
 import android.view.WindowInsets
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -18,7 +18,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 class ControlActivity : AppCompatActivity() {
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var layout: ConstraintLayout
-    private lateinit var remoteEndpoint: RemoteEndpoint
     private lateinit var menuButton: ImageButton
     private var isMenuOpen = false
     private lateinit var menuLayout: LinearLayout
@@ -81,29 +80,38 @@ class ControlActivity : AppCompatActivity() {
     }
 
     private fun initRemotedEndpoint() {
+        lateinit var remoteEndpoint: RemoteEndpoint
         // fetch the remoteEndpoint from the MainActivity, it is serialized and passed to the
         // ControlActivity
         val remoteEndpointRaw = RemoteEndpointHolder.get()
         if (remoteEndpointRaw.getDevice() is BluetoothDevice)
             remoteEndpoint =
                 RemoteEndpoint.create(remoteEndpointRaw.getDevice()) as BluetoothEndpoint
+        else if (remoteEndpointRaw.getDevice() is WifiP2pManager.PeerListListener)
+            remoteEndpoint =
+                RemoteEndpoint.create(remoteEndpointRaw.getDevice()) as WifiEndpoint
         else
             throw IllegalArgumentException("Unknown device type")
 
         // Initialize BluetoothManager
         // Check if remoteEndpoint is a BluetoothEndpoint and initialize BluetoothManager
-        if (remoteEndpoint is BluetoothEndpoint) {
-            val bluetoothDevice = remoteEndpoint.getDevice() as BluetoothDevice
-            bluetoothManager = BluetoothManager(bluetoothDevice, this)
-        } else {
-            // Handle non-Bluetooth endpoints or throw an exception
-            Log.d("ControlActivity", "RemoteEndpoint is not a BluetoothEndpoint")
-            throw IllegalStateException("ControlActivity requires a BluetoothEndpoint")
+        when (remoteEndpoint) {
+            is BluetoothEndpoint -> {
+                val bluetoothDevice = remoteEndpoint.getDevice()
+                bluetoothManager = BluetoothManager(bluetoothDevice, this)
+            }
+            is WifiEndpoint -> {
+                Toast.makeText(this, "Wi-Fi P2P not implemented yet", Toast.LENGTH_SHORT).show()
+            }
+            else -> {
+                // Handle non-Bluetooth endpoints or throw an exception
+                Log.d("ControlActivity", "RemoteEndpoint is not a BluetoothEndpoint")
+                throw IllegalStateException("ControlActivity requires a BluetoothEndpoint")
+            }
         }
     }
 
     private fun openMenu() {
-        Log.d("ControlActivity", "Menu opened")
         // Load the slide-in animation for the fragment
         val slideInAnimation = AnimationUtils.loadAnimation(this, R.anim.menu_layout_enter_from_left)
 
@@ -135,7 +143,6 @@ class ControlActivity : AppCompatActivity() {
     }
 
     private fun closeMenu() {
-            Log.d("ControlActivity", "Menu closed")
         val slideOutAnimation = AnimationUtils.loadAnimation(this, R.anim.menu_layout_exit_to_left)
         slideOutAnimation.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation?) {}

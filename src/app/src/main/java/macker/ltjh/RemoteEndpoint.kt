@@ -2,6 +2,7 @@ package macker.ltjh
 
 import android.bluetooth.BluetoothDevice
 import android.net.wifi.p2p.WifiP2pManager
+import android.util.Log
 import java.io.Serializable
 
 // Singleton to hold the RemoteEndpoint instance

@@ -63,10 +63,6 @@ class MenuFragment : Fragment() {
 //        Get current theme from system
         val isDarkMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
 
-//        print a debug information about the current theme
-        val beforeMode = if (isDarkMode) "Dark" else "Light"
-        Log.d("MenuFragment", "Current theme: $beforeMode")
-
         if (isDarkMode) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         } else {
